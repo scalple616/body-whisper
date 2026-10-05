@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>身体低语 · 感官自察训练器 v0.1</title>
+<style>
+  :root{
+    --di:#f8f5ee; --di2:#f0ebe0; --hun:#4c7a92; --hun2:#7fa3b5;
+    --mo:#26333d; --wen:#a8703f; --zhui:#c9a24b; --ok:#5e8c6a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    background:var(--di); color:var(--mo);
+    font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+    line-height:1.9; letter-spacing:.04em;
+  }
+  .page{max-width:760px;margin:0 auto;padding:0 22px 100px;}
+
+  header{text-align:center;padding:72px 0 34px;}
+  .kicker{color:var(--hun);font-size:13px;letter-spacing:.55em;text-indent:.55em;margin-bottom:18px;}
+  h1{font-size:36px;font-weight:600;letter-spacing:.16em;}
+  h1 .dot{color:var(--zhui);}
+  .sub{margin-top:14px;color:#6b7680;font-size:14.5px;letter-spacing:.2em;text-indent:.2em;}
+  .badge{display:inline-block;margin-top:22px;font-size:12px;color:var(--hun);border:1px solid var(--hun2);border-radius:20px;padding:2px 16px;letter-spacing:.2em;}
+
+  /* ---------- 导航 ---------- */
+  nav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:26px 0 8px;}
+  nav button{
+    background:none;border:none;cursor:pointer;
+    font-family:inherit;font-size:15px;letter-spacing:.15em;
+    color:#7c858d;padding:8px 18px;border-radius:2px;
+    border-bottom:2px solid transparent;transition:all .5s;
+  }
+  nav button.on{color:var(--hun);border-bottom-color:var(--hun);}
+  nav button:hover{color:var(--hun);}
+
+  section{display:none;animation:fade .6s ease;}
+  section.on{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+  .lead{text-align:center;color:#5b6670;font-size:15px;max-width:540px;margin:26px auto 10px;}
+  .lead em{color:var(--hun);font-style:normal;}
+
+  /* ---------- 呼吸页 ---------- */
+  .breath-stage{
+    display:flex;flex-direction:column;align-items:center;
+    padding:44px 0 20px;
+  }
+  .ring-wrap{position:relative;width:300px;height:300px;display:flex;align-items:center;justify-content:center;}
+  .ring{
+    width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle at 42% 38%, rgba(127,163,181,.55), rgba(76,122,146,.28));
+    box-shadow:0 0 60px rgba(76,122,146,.25);
+    transform:scale(.58);
+    transition:transform 5s cubic-bezier(.45,0,.55,1);
+  }
+  .ring-wrap.run .ring{transform:scale(1);}
+  .phase{
+    position:absolute;color:#fdfcf8;font-size:26px;letter-spacing:.4em;text-indent:.4em;
+    text-shadow:0 1px 12px rgba(38,51,61,.45);
+    font-weight:600;pointer-events:none;
+  }
+  .breath-meta{margin-top:26px;text-align:center;color:#6b7680;font-size:14px;letter-spacing:.12em;min-height:26px;}
+  .breath-ctl{display:flex;gap:14px;justify-content:center;margin:22px 0 8px;flex-wrap:wrap;}
+  .btn{
+    font-family:inherit;cursor:pointer;letter-spacing:.2em;text-indent:.2em;
+    border-radius:2px;font-size:15px;padding:9px 30px;transition:all .4s;
+  }
+  .btn-main{background:var(--hun);color:#f6f3ea;border:1px solid var(--hun);}
+  .btn-main:hover{background:#3f687e;}
+  .btn-ghost{background:none;color:var(--hun);border:1px solid var(--hun2);}
+  .btn-ghost:hover{border-color:var(--hun);}
+  .sound-opt{display:flex;align-items:center;gap:8px;justify-content:center;color:#7c858d;font-size:14px;margin-top:6px;cursor:pointer;user-select:none;}
+  .sound-opt input{accent-color:var(--hun);}
+  .sci-note{
+    max-width:540px;margin:34px auto 0;background:var(--di2);
+    border-left:3px solid var(--zhui);padding:14px 20px;
+    font-size:13.5px;color:#5b6670;
+  }
+  .sci-note b{color:var(--wen);letter-spacing:.1em;}
+
+  /* ---------- 日记页 ---------- */
+  .card{background:#fffdf8;border:1px solid rgba(38,51,61,.1);border-radius:4px;padding:26px 30px;margin:26px 0;}
+  .card h3{font-size:16px;letter-spacing:.3em;color:var(--hun);font-weight:600;margin-bottom:16px;}
+  .frow{margin-bottom:18px;}
+  .flabel{font-size:13.5px;color:#7c858d;letter-spacing:.2em;margin-bottom:9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;}
+  .chip{
+    cursor:pointer;user-select:none;font-size:14px;padding:5px 15px;
+    border:1px solid rgba(76,122,146,.4);border-radius:20px;color:#4a5762;
+    transition:all .35s;background:none;font-family:inherit;
+  }
+  .chip.on{background:var(--hun);color:#f6f3ea;border-color:var(--hun);}
+  input[type=range]{width:100%;accent-color:var(--hun);}
+  .range-val{text-align:center;color:var(--wen);font-size:15px;letter-spacing:.2em;margin-top:2px;}
+  textarea,.tinput{
+    width:100%;font-family:inherit;font-size:15px;color:var(--mo);
+    background:var(--di);border:1px solid rgba(76,122,146,.3);border-radius:3px;
+    padding:10px 14px;resize:vertical;line-height:1.8;
+  }
+  textarea:focus,.tinput:focus{outline:none;border-color:var(--hun);}
+  .save-bar{text-align:center;margin-top:6px;}
+  .hint-ok{text-align:center;color:var(--ok);font-size:14px;letter-spacing:.2em;min-height:24px;margin-top:10px;}
+
+  .entries{margin-top:8px;}
+  .entry{
+    border-bottom:1px dashed rgba(76,122,146,.25);
+    padding:16px 4px;position:relative;
+  }
+  .entry:last-child{border-bottom:none;}
+  .entry .e-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;}
+  .entry .e-sig{font-size:15px;color:var(--mo);font-weight:600;letter-spacing:.05em;}
+  .entry .e-sig .imp{color:var(--wen);}
+  .entry .e-time{font-size:12.5px;color:#98a0a6;letter-spacing:.06em;}
+  .entry .e-env{font-size:13.5px;color:var(--hun);margin-top:2px;}
+  .entry .e-note{font-size:13.5px;color:#5b6670;margin-top:4px;}
+  .entry .del{
+    position:absolute;right:0;top:14px;border:none;background:none;cursor:pointer;
+    color:#c4b7a5;font-size:12px;letter-spacing:.1em;font-family:inherit;padding:2px 4px;
+  }
+  .entry .del:hover{color:var(--wen);}
+  .empty{text-align:center;color:#a8adb2;padding:30px 0;font-size:14px;letter-spacing:.15em;}
+
+  /* ---------- 分析页 ---------- */
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0;}
+  .stat{background:#fffdf8;border:1px solid rgba(38,51,61,.1);border-radius:4px;padding:18px 10px;text-align:center;}
+  .stat .n{font-size:34px;color:var(--hun);font-weight:600;line-height:1.3;}
+  .stat .t{font-size:12.5px;color:#7c858d;letter-spacing:.2em;margin-top:2px;}
+  .bars{margin:8px 0 4px;}
+  .bar-row{display:flex;align-items:center;gap:12px;margin:11px 0;}
+  .bar-name{flex:none;width:88px;font-size:14px;color:#4a5762;text-align:right;}
+  .bar-track{flex:1;background:var(--di2);border-radius:2px;height:22px;overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--hun2),var(--hun));border-radius:2px;transition:width .9s ease;width:0;}
+  .bar-n{flex:none;width:34px;font-size:13px;color:#7c858d;}
+  .mirror-note{max-width:560px;margin:30px auto 0;text-align:center;color:#5b6670;font-size:14.5px;}
+  .mirror-note em{color:var(--wen);font-style:normal;}
+
+  /* ---------- 科学注脚页 ---------- */
+  .footnote{margin:26px 0;}
+  .fn-block{border-left:3px solid var(--ok);background:#fffdf8;padding:16px 22px;margin:16px 0;border-radius:0 3px 3px 0;}
+  .fn-block.guess{border-left-color:var(--zhui);}
+  .fn-block .fn-t{font-size:14px;font-weight:600;letter-spacing:.25em;margin-bottom:6px;}
+  .fn-block .fn-t.solid{color:var(--ok);}
+  .fn-block .fn-t.guess{color:var(--zhui);}
+  .fn-block p{font-size:14px;color:#4a5762;}
+  .privacy{text-align:center;font-size:13px;color:#8a9299;margin-top:36px;letter-spacing:.1em;}
+  .privacy b{color:var(--hun);font-weight:600;}
+
+  @media (max-width:600px){
+    h1{font-size:27px;}
+    .stats-grid{grid-template-columns:1fr 1fr;}
+    .ring-wrap{width:250px;height:250px;}
+    .ring{width:180px;height:180px;}
+  }
+  @media print{section{display:block!important;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="kicker">皮 囊 之 下 · 潜 流 之 上</div>
+    <h1>身体低语<span class="dot">·</span>感官自察训练器</h1>
+    <div class="sub">读得懂身体的信号，才找得到滋养你的环境</div>
+    <div class="badge">v0.1 · 数据只存你的手机/电脑 · 不上传</div>
+  </header>
+
+  <nav>
+    <button class="on" data-t="breath">呼吸引导</button>
+    <button data-t="diary">感官日记</button>
+    <button data-t="mirror">模式之镜</button>
+    <button data-t="science">科学注脚</button>
+  </nav>
+
+  <!-- ============ 呼吸引导 ============ -->
+  <section id="breath" class="on">
+    <p class="lead">约 <em>6 次/分</em> 的共振呼吸，是研究反复验证过的迷走张力训练频率。<br>圆随息动：涨为吸，落为呼。眼睛跟着圆，念头交给呼吸。</p>
+    <div class="breath-stage">
+      <div class="ring-wrap" id="ringWrap">
+        <div class="ring" id="ring"></div>
+        <div class="phase" id="phaseText">静</div>
+      </div>
+      <div class="breath-meta" id="breathMeta">尚未开始</div>
+      <div class="breath-ctl">
+        <button class="btn btn-main" id="btnBreath">入 静</button>
+        <button class="btn btn-ghost" id="btnReset">复 位</button>
+      </div>
+      <label class="sound-opt"><input type="checkbox" id="sndOn"> 声音提示（起音轻柔）</label>
+    </div>
+    <div class="sci-note"><b>练法</b>　坐直，肩膀放松，鼻吸口呼（或全鼻）。吸气 5 秒、呼气 5 秒，一吸一呼为一息。每天 5–10 分钟。头晕就停下，回到自然呼吸——<b>临界点之前回头，是聪明的稳，不是怂。</b></div>
+  </section>
+
+  <!-- ============ 感官日记 ============ -->
+  <section id="diary">
+    <p class="lead">身体起了反应的瞬间——起鸡皮疙瘩、忽然屏息、眼眶一热——<em>趁它还没溜走，给它打个点。</em>每次一分钟，三十天后交给"模式之镜"去算。</p>
+
+    <div class="card">
+      <h3>记 一 次</h3>
+      <div class="frow">
+        <div class="flabel">身体信号（可多选）</div>
+        <div class="chips" id="sigChips"></div>
+      </div>
+      <div class="frow">
+        <div class="flabel">强度</div>
+        <input type="range" id="imp" min="1" max="5" value="3">
+        <div class="range-val" id="impVal">叁 · 中等</div>
+      </div>
+      <div class="frow">
+        <div class="flabel">当时的环境（可多选）</div>
+        <div class="chips" id="envChips"></div>
+      </div>
+      <div class="frow">
+        <div class="flabel">如果愿意，写一句当时的情境</div>
+        <textarea id="note" rows="2" placeholder="例：听《漠河舞厅》到第二段副歌，小臂先起了一层……"></textarea>
+      </div>
+      <div class="save-bar">
+        <button class="btn btn-main" id="btnSave">落 笔</button>
+      </div>
+      <div class="hint-ok" id="saveHint"></div>
+    </div>
+
+    <div class="card">
+      <h3>已 记 之 事</h3>
+      <div class="entries" id="entryList"></div>
+    </div>
+  </section>
+
+  <!-- ============ 模式之镜 ============ -->
+  <section id="mirror">
+    <p class="lead">日记攒到 <em>20 条以上</em>，这面镜子才会开始显影。<br>它替你回答一个问题：<em>什么样的环境，最常点燃你的身体？</em></p>
+    <div class="stats-grid">
+      <div class="stat"><div class="n" id="stTotal">0</div><div class="t">记 录 总 数</div></div>
+      <div class="stat"><div class="n" id="stWeek">0</div><div class="t">本 周 打 点</div></div>
+      <div class="stat"><div class="n" id="stMax">—</div><div class="t">最 常 信 号</div></div>
+    </div>
+    <div class="card">
+      <h3>环 境 显 影 · 什 么 点 燃 你</h3>
+      <div class="bars" id="envBars"></div>
+      <div id="envEmpty" class="empty">还没有记录——先去「感官日记」落第一笔</div>
+    </div>
+    <div class="card">
+      <h3>信 号 分 布</h3>
+      <div class="bars" id="sigBars"></div>
+    </div>
+    <div class="mirror-note" id="mirrorNote">三十天后回来看：高频的那几个环境词，就是你身体自己写下的<em>「滋养清单」</em>。多去，多待。</div>
+  </section>
+
+  <!-- ============ 科学注脚 ============ -->
+  <section id="science">
+    <p class="lead">这个工具立在一道分水岭上：分水岭这边是<em>教科书</em>，那边是<em>理论猜想</em>。<br>我们把它画清楚——真实，是美的准则。</p>
+
+    <div class="footnote">
+      <div class="fn-block">
+        <div class="fn-t solid">◈ 教科书共识（放心依靠）</div>
+        <p><b>竖毛反应（起鸡皮疙瘩）走交感神经通路</b>：竖毛肌上的 α1 受体接去甲肾上腺素而收缩，不受意识控制。它是情绪唤起的自主神经"指纹"之一。</p>
+        <p><b>迷走神经是副交感的主干</b>：管"休息与消化"，走乙酰胆碱；其张力（活性）临床上以心率变异性（HRV）度量。</p>
+        <p><b>约 6 次/分的共振呼吸可提高迷走张力</b>：此效应经多项研究反复验证，也被心脏康复领域采纳。</p>
+      </div>
+      <div class="fn-block guess">
+        <div class="fn-t guess">◈ 理论假设（持灯前行，留意脚下）</div>
+        <p><b>多迷走神经理论</b>（Porges）在学界有争议：它对临床实践有启发性，但部分主张尚未获共识。</p>
+        <p><b>"持续刺激迷走→提升思维强度、延年益寿"</b>是方向性推测：迷走张力与情绪调节、抗炎、认知表现的相关性有证据，因果与寿命效应仍需更多研究。</p>
+        <p><b>本工具不提供医疗建议</b>：它是一面镜子和一本日记，帮你自己观察自己；身体不适请就医。</p>
+      </div>
+    </div>
+    <p class="privacy">你的每一条记录都只存在<b>本机的浏览器里</b>，不上传、不联网、不与任何第三方共享。清除浏览器数据会一并清除记录，请知悉。</p>
+  </section>
+
+  <footer style="text-align:center;margin-top:80px;color:#a8adb2;font-size:12.5px;letter-spacing:.3em;">
+    感 官 之 门 · 虚 掩 着
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  /* ---------- 工具 ---------- */
+  var $ = function(s){return document.querySelector(s);};
+  var CN = ["","壹","贰","叁","肆","伍"];
+  var SIG = ["竖毛反应","呼吸变化","心跳感","温度变化","眼眶发热","战栗","其他"];
+  var ENV = ["音乐","自然","文字","与人相处","独处","运动","饮食","劳作","其他"];
+
+  /* ---------- 导航 ---------- */
+  var tabs = document.querySelectorAll("nav button");
+  tabs.forEach(function(b){
+    b.addEventListener("click",function(){
+      tabs.forEach(function(x){x.classList.remove("on");});
+      b.classList.add("on");
+      document.querySelectorAll("section").forEach(function(s){s.classList.remove("on");});
+      $("#"+b.dataset.t).classList.add("on");
+      if(b.dataset.t==="mirror") renderMirror();
+    });
+  });
+
+  /* ---------- 呼吸引导 ---------- */
+  var PHASE_MS = 5000, timer=null, cycles=0, running=false, t0=0;
+  var audioCtx=null;
+  function tone(freq){
+    if(!$("#sndOn").checked) return;
+    try{
+      audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+      var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.frequency.value=freq; o.type="sine";
+      g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.06,audioCtx.currentTime+0.4);
+      g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+1.1);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime+1.2);
+    }catch(e){}
+  }
+  function setPhase(txt,ringOn,freq){
+    $("#phaseText").textContent=txt;
+    $("#ringWrap").classList.toggle("run",ringOn);
+    tone(freq);
+    if(txt==="呼"){cycles++;}
+    $("#breathMeta").textContent = "第 "+cycles+" 息 · 已练 "+fmtMin(Date.now()-t0);
+  }
+  function fmtMin(ms){var m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000);return m+":"+String(s).padStart(2,"0");}
+  function step(){
+    setPhase("吸",true,432);
+    timer=setTimeout(function(){
+      setPhase("呼",false,336);
+      timer=setTimeout(step,PHASE_MS);
+    },PHASE_MS);
+  }
+  $("#btnBreath").addEventListener("click",function(){
+    if(!running){
+      running=true;cycles=0;t0=Date.now();
+      this.textContent="收 功";
+      step();
+    }else{
+      running=false;clearTimeout(timer);
+      this.textContent="入 静";
+      $("#ringWrap").classList.remove("run");
+      $("#phaseText").textContent="静";
+      $("#breathMeta").textContent="本次共 "+cycles+" 息 · 功不唐捐";
+    }
+  });
+  $("#btnReset").addEventListener("click",function(){
+    running=false;clearTimeout(timer);cycles=0;
+    $("#btnBreath").textContent="入 静";
+    $("#ringWrap").classList.remove("run");
+    $("#phaseText").textContent="静";
+    $("#breathMeta").textContent="尚未开始";
+  });
+
+  /* ---------- 感官日记 ---------- */
+  function makeChips(box,arr){
+    arr.forEach(function(t){
+      var b=document.createElement("button");
+      b.className="chip";b.textContent=t;
+      b.addEventListener("click",function(){b.classList.toggle("on");});
+      box.appendChild(b);
+    });
+  }
+  makeChips($("#sigChips"),SIG);
+  makeChips($("#envChips"),ENV);
+  var imp=$("#imp"),impVal=$("#impVal");
+  imp.addEventListener("input",function(){impVal.textContent=CN[imp.value]+" · "+["极轻","轻","中等","强","极强"][imp.value-1];});
+
+  var KEY="bodyWhisper.v01";
+  function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){return[];}}
+  function save(a){localStorage.setItem(KEY,JSON.stringify(a));}
+  function picked(id){return Array.prototype.map.call(document.querySelectorAll("#"+id+" .chip.on"),function(c){return c.textContent;});}
+
+  $("#btnSave").addEventListener("click",function(){
+    var sig=picked("sigChips"), env=picked("envChips");
+    if(sig.length===0&&env.length===0){
+      $("#saveHint").textContent="至少选一个身体信号或环境，才算打了个点";return;
+    }
+    var entries=load();
+    entries.push({
+      t:Date.now(), sig:sig, env:env,
+      imp:parseInt(imp.value,10), note:$("#note").value.trim()
+    });
+    save(entries);
+    document.querySelectorAll(".chip.on").forEach(function(c){c.classList.remove("on");});
+    $("#note").value="";imp.value=3;impVal.textContent="叁 · 中等";
+    $("#saveHint").textContent="已落笔 ✓ 身体这一瞬，记下了";
+    setTimeout(function(){$("#saveHint").textContent="";},2400);
+    renderEntries();
+  });
+
+  function fmtTime(ts){
+    var d=new Date(ts);
+    var p=function(n){return String(n).padStart(2,"0");};
+    return d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes());
+  }
+  function renderEntries(){
+    var entries=load().slice().reverse(), box=$("#entryList");
+    box.innerHTML="";
+    if(entries.length===0){box.innerHTML="<div class='empty'>还没有记录 · 第一笔，等一个起鸡皮疙瘩的瞬间</div>";return;}
+    entries.forEach(function(e){
+      var d=document.createElement("div");d.className="entry";
+      var sigTxt=e.sig.join(" · ")||"（未标信号）";
+      var impTxt="";for(var i=0;i<e.imp;i++)impTxt+="●";
+      d.innerHTML='<div class="e-head"><span class="e-sig">'+sigTxt+
+        ' <span class="imp">'+impTxt+'</span></span><span class="e-time">'+fmtTime(e.t)+'</span></div>'+
+        (e.env.length?'<div class="e-env">'+e.env.join(" · ")+'</div>':'')+
+        (e.note?'<div class="e-note">'+e.note.replace(/</g,"&lt;")+'</div>':'')+
+        '<button class="del">删除</button>';
+      d.querySelector(".del").addEventListener("click",function(){
+        if(!confirm("删掉这一笔？"))return;
+        var all=load();
+        all=all.filter(function(x){return x.t!==e.t;});
+        save(all);renderEntries();renderMirror();
+      });
+      box.appendChild(d);
+    });
+  }
+  renderEntries();
+
+  /* ---------- 模式之镜 ---------- */
+  function renderMirror(){
+    var all=load();
+    $("#stTotal").textContent=all.length;
+    var week=0,now=Date.now();
+    all.forEach(function(e){if(now-e.t<7*86400000)week++;});
+    $("#stWeek").textContent=week;
+
+    var envCnt={},sigCnt={};
+    all.forEach(function(e){
+      e.env.forEach(function(x){envCnt[x]=(envCnt[x]||0)+1;});
+      e.sig.forEach(function(x){sigCnt[x]=(sigCnt[x]||0)+1;});
+    });
+    function drawBars(box,cnt){
+      var keys=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];});
+      box.innerHTML="";
+      if(keys.length===0)return;
+      var max=cnt[keys[0]];
+      keys.forEach(function(k){
+        var r=document.createElement("div");r.className="bar-row";
+        r.innerHTML='<div class="bar-name">'+k+'</div><div class="bar-track"><div class="bar-fill"></div></div><div class="bar-n">'+cnt[k]+'</div>';
+        box.appendChild(r);
+        var f=r.querySelector(".bar-fill");
+        requestAnimationFrame(function(){setTimeout(function(){f.style.width=Math.max(6,cnt[k]/max*100)+"%";},60);});
+      });
+    }
+    drawBars($("#envBars"),envCnt);
+    drawBars($("#sigBars"),sigCnt);
+    $("#envEmpty").style.display = all.length? "none":"block";
+    var maxSig=Object.keys(sigCnt).sort(function(a,b){return sigCnt[b]-sigCnt[a];})[0];
+    $("#stMax").textContent = maxSig? maxSig.slice(0,4):"—";
+    if(all.length>=20){
+      $("#mirrorNote").innerHTML="镜子已经开始显影——高频的那几个环境词，就是你身体写下的<em>「滋养清单」</em>。多去，多待。";
+    }else{
+      $("#mirrorNote").innerHTML="还差 <em>"+(20-all.length)+"</em> 条开始显影。不急，身体的事，本来就急不来。";
+    }
+  }
+  renderMirror();
+})();
+</script>
+</body>
+</html>
